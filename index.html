@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Universal Equation Editor</title>
+  <style>
+    :root {
+      --page: #f3f5f7;
+      --panel: #ffffff;
+      --ink: #222831;
+      --muted: #5b6471;
+      --line: #cfd7e2;
+      --line-strong: #9fabbb;
+      --accent: #1b75bb;
+      --accent-dark: #155b92;
+      --accent-soft: #e7f2fb;
+      --warm: #f7c948;
+      --code: #fff8c7;
+      --success: #247a42;
+      --danger: #bf3b36;
+      --shadow: 0 14px 35px rgba(26, 43, 68, 0.12);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    select,
+    textarea,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .site-header {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 2px 12px rgba(24, 40, 62, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .nav {
+      align-items: center;
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      margin: 0 auto;
+      max-width: 1180px;
+      min-height: 64px;
+      padding: 0 18px;
+    }
+
+    .brand {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .logo-mark {
+      align-items: center;
+      background: linear-gradient(140deg, #277fc1, #46a96f);
+      border-radius: 6px;
+      color: #fff;
+      display: inline-flex;
+      flex: 0 0 38px;
+      font-family: Georgia, serif;
+      font-size: 25px;
+      font-weight: 700;
+      height: 38px;
+      justify-content: center;
+      width: 38px;
+    }
+
+    .brand-text {
+      display: grid;
+      line-height: 1.05;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .brand-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav-links {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .nav-links a,
+    .login-button,
+    .buy-button {
+      border-radius: 4px;
+      color: #334052;
+      padding: 8px 10px;
+    }
+
+    .nav-links a:hover,
+    .login-button:hover {
+      background: #edf3f8;
+    }
+
+    .buy-button {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .buy-button:hover {
+      background: var(--accent-dark);
+    }
+
+    main {
+      margin: 0 auto;
+      max-width: 1180px;
+      padding: 26px 18px 42px;
+    }
+
+    .intro {
+      margin: 10px 0 22px;
+      text-align: center;
+    }
+
+    .intro h1 {
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.1;
+      margin: 0 0 6px;
+    }
+
+    .intro h2 {
+      color: #356a4c;
+      font-size: clamp(16px, 2.2vw, 22px);
+      font-weight: 400;
+      margin: 0 0 14px;
+    }
+
+    .intro p {
+      color: var(--muted);
+      margin: 0 auto;
+      max-width: 880px;
+    }
+
+    .editor-shell {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: clip;
+    }
+
+    .editor-topbar {
+      align-items: center;
+      background: #eef4f9;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr auto;
+      padding: 12px 14px;
+    }
+
+    .status-row {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .status-pill {
+      align-items: center;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 7px;
+      padding: 6px 10px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      background: var(--success);
+      border-radius: 50%;
+      display: inline-block;
+      height: 8px;
+      width: 8px;
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .tool-button,
+    .primary-button,
+    .icon-button {
+      align-items: center;
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      display: inline-flex;
+      gap: 7px;
+      justify-content: center;
+      min-height: 34px;
+      padding: 7px 11px;
+      transition: background 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease;
+    }
+
+    .tool-button,
+    .icon-button {
+      background: #fff;
+      color: #2f3d4c;
+    }
+
+    .tool-button:hover,
+    .icon-button:hover {
+      background: #f5f9fc;
+      border-color: var(--accent);
+      color: var(--accent-dark);
+    }
+
+    .primary-button {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .primary-button:hover {
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+    }
+
+    .editor-body {
+      display: grid;
+      grid-template-columns: minmax(230px, 270px) minmax(0, 1fr);
+      min-height: 580px;
+    }
+
+    .palette {
+      background: #f7fafc;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .tab {
+      background: #e9f0f6;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      color: #405266;
+      font-size: 13px;
+      min-height: 42px;
+      padding: 8px 6px;
+    }
+
+    .tab[aria-selected="true"] {
+      background: #fff;
+      border-bottom-color: #fff;
+      color: var(--accent-dark);
+      font-weight: 700;
+    }
+
+    .palette-content {
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .palette-group {
+      margin: 0 0 18px;
+    }
+
+    .palette-heading {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin: 0 0 7px;
+      text-transform: uppercase;
+    }
+
+    .button-grid {
+      display: grid;
+      gap: 6px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .latex-chip {
+      align-items: center;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: #263545;
+      display: flex;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+      height: 38px;
+      justify-content: center;
+      padding: 0 4px;
+      width: 100%;
+    }
+
+    .latex-chip:hover,
+    .latex-chip:focus-visible {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .history-item {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: #2b3948;
+      display: block;
+      overflow: hidden;
+      padding: 8px 9px;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+    }
+
+    .history-item:hover {
+      border-color: var(--accent);
+      color: var(--accent-dark);
+    }
+
+    .work-area {
+      display: grid;
+      grid-template-rows: auto minmax(160px, auto) auto auto minmax(160px, 1fr);
+      min-width: 0;
+    }
+
+    .settings {
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(6, minmax(110px, 1fr));
+      padding: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    select,
+    input[type="text"] {
+      background: #fff;
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      color: #263545;
+      min-height: 34px;
+      padding: 6px 8px;
+      width: 100%;
+    }
+
+    select:focus,
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      outline: 3px solid rgba(27, 117, 187, 0.16);
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .segment {
+      background: #fff;
+      border: 1px solid var(--line-strong);
+      color: #2f3d4c;
+      min-height: 34px;
+      padding: 6px 8px;
+    }
+
+    .segment:first-child {
+      border-radius: 4px 0 0 4px;
+    }
+
+    .segment:last-child {
+      border-left: 0;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .segment.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .input-zone {
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .input-header,
+    .output-header {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    textarea {
+      background: #fff;
+      border: 1px solid var(--line-strong);
+      border-radius: 5px;
+      color: #15202b;
+      min-height: 118px;
+      padding: 12px;
+      resize: vertical;
+      tab-size: 2;
+      width: 100%;
+    }
+
+    .preview-zone {
+      align-items: center;
+      background-image:
+        linear-gradient(45deg, #eff3f7 25%, transparent 25%),
+        linear-gradient(-45deg, #eff3f7 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #eff3f7 75%),
+        linear-gradient(-45deg, transparent 75%, #eff3f7 75%);
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      background-size: 20px 20px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      justify-items: center;
+      min-height: 180px;
+      padding: 24px;
+    }
+
+    .preview-frame {
+      align-items: center;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      display: flex;
+      justify-content: center;
+      max-width: 100%;
+      min-height: 112px;
+      min-width: min(520px, 100%);
+      padding: 24px;
+      position: relative;
+    }
+
+    .preview-frame.bg-black {
+      background: #121416;
+    }
+
+    .preview-frame.bg-red {
+      background: #ffe7e4;
+    }
+
+    .preview-frame.bg-green {
+      background: #e6f6eb;
+    }
+
+    .preview-frame.bg-blue {
+      background: #e7f0ff;
+    }
+
+    .preview-frame.bg-transparent {
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .preview-frame img {
+      display: block;
+      max-height: 220px;
+      max-width: 100%;
+    }
+
+    .preview-error {
+      color: var(--danger);
+      display: none;
+      font-weight: 700;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .option-strip {
+      align-items: start;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1.3fr 1fr;
+      padding: 14px;
+    }
+
+    .choice-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .choice-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .choice-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .choice {
+      background: #fff;
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      color: #2f3d4c;
+      min-height: 31px;
+      padding: 5px 9px;
+    }
+
+    .choice.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent-dark);
+      font-weight: 700;
+    }
+
+    .copy-zone {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .copy-box {
+      background: var(--code);
+      border: 1px solid #e2cb5c;
+      border-radius: 5px;
+      color: #2a2a11;
+      cursor: copy;
+      font-family: Menlo, Consolas, "Courier New", monospace;
+      font-size: 13px;
+      min-height: 72px;
+      overflow: auto;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .toast {
+      background: #203040;
+      border-radius: 4px;
+      bottom: 18px;
+      box-shadow: var(--shadow);
+      color: #fff;
+      left: 50%;
+      opacity: 0;
+      padding: 10px 14px;
+      pointer-events: none;
+      position: fixed;
+      transform: translate(-50%, 14px);
+      transition: opacity 160ms ease, transform 160ms ease;
+      z-index: 20;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .features {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 26px;
+    }
+
+    .feature {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .feature h3 {
+      margin: 0 0 8px;
+    }
+
+    .feature p {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      justify-content: space-between;
+      margin-top: 30px;
+      padding-top: 18px;
+    }
+
+    @media (max-width: 940px) {
+      .editor-body {
+        grid-template-columns: 1fr;
+      }
+
+      .palette {
+        border-bottom: 1px solid var(--line);
+        border-right: 0;
+        max-height: 430px;
+      }
+
+      .settings {
+        grid-template-columns: repeat(3, minmax(130px, 1fr));
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .nav {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+        padding-bottom: 12px;
+        padding-top: 12px;
+      }
+
+      .nav-links {
+        justify-content: flex-start;
+      }
+
+      .editor-topbar,
+      .option-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .quick-actions {
+        justify-content: flex-start;
+      }
+
+      .settings {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-zone {
+        padding: 14px;
+      }
+
+      .preview-frame {
+        min-width: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="#top" aria-label="Equation Editor home">
+        <span class="logo-mark">Σ</span>
+        <span class="brand-text">
+          <span class="brand-title">Universal Equation Editor</span>
+          <span class="brand-subtitle">for mathematics - Malin Hess & GPT </span>
+        </span>
+      </a>
+      
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="intro" aria-labelledby="page-title">
+      <h1 id="page-title">Universal Equation Editor for mathematics</h1>
+      <h2>- delivering thousands of beautiful equations every second -</h2>
+      <p>
+        A standalone LaTeX equation editor, with a live render preview,
+        toolbar palettes, download links, and formatted strings for websites, forums, docs, and markup.
+      </p>
+    </section>
+
+    <section class="editor-shell" id="editor" aria-label="Equation editor">
+      <div class="editor-topbar">
+        <div class="status-row">
+          <span class="status-pill"><span class="dot" aria-hidden="true"></span> Live preview</span>
+          <span>Use Tab or toolbar buttons to jump quickly between common structures.</span>
+        </div>
+        <div class="quick-actions">
+          <button class="tool-button" id="sampleButton" type="button">fx Sample</button>
+          <button class="tool-button" id="clearButton" type="button">Clear</button>
+          <button class="primary-button" id="downloadButton" type="button">Download</button>
+        </div>
+      </div>
+
+      <div class="editor-body">
+        <aside class="palette" aria-label="LaTeX palette">
+          <div class="tabs" role="tablist" aria-label="Palette groups">
+            <button class="tab" type="button" role="tab" aria-selected="true" data-tab="math">Math</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="symbols">Symbols</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="physics">Physics</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="templates">Templates</button>
+          </div>
+          <div class="palette-content" id="paletteContent"></div>
+        </aside>
+
+        <div class="work-area">
+          <div class="settings">
+            <div class="field">
+              <label for="formatSelect">Save as</label>
+              <select id="formatSelect">
+                <option value="svg">svg</option>
+                <option value="png">png</option>
+                <option value="jpg">jpg</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="exportBackgroundSelect">Export BG</label>
+              <select id="exportBackgroundSelect">
+                <option value="white" selected>White</option>
+                <option value="transparent">Transparent</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="sizeSelect">Font size</label>
+              <select id="sizeSelect">
+                <option value="5">5 pt</option>
+                <option value="9">9 pt</option>
+                <option value="10">10 pt</option>
+                <option value="12" selected>12 pt</option>
+                <option value="18">18 pt</option>
+                <option value="20">20 pt</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="dpiSelect">DPI</label>
+              <select id="dpiSelect">
+                <option>50</option>
+                <option>80</option>
+                <option selected>100</option>
+                <option>110</option>
+                <option>120</option>
+                <option>150</option>
+                <option>200</option>
+                <option>300</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="backgroundSelect">Background</label>
+              <select id="backgroundSelect">
+                <option value="transparent">Transparent</option>
+                <option value="white" selected>White</option>
+                <option value="black">Black</option>
+                <option value="red">Red</option>
+                <option value="green">Green</option>
+                <option value="blue">Blue</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Display</label>
+              <div class="segmented" role="group" aria-label="Display mode">
+                <button class="segment active" type="button" data-align="inline">Inline</button>
+                <button class="segment" type="button" data-align="block">Block</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-zone">
+            <div class="input-header">
+              <span class="section-title">Define equation with LaTeX markup</span>
+              <span class="hint">Click a palette item to insert it at the cursor.</span>
+            </div>
+            <textarea id="latexInput" spellcheck="false" autocapitalize="off" autocomplete="off">\int_{-\infty}^{\infty} e^{-x^2}\,dx=\sqrt{\pi}</textarea>
+          </div>
+
+          <div class="preview-zone">
+            <div>
+              <div class="preview-frame bg-white" id="previewFrame">
+                <img id="previewImage" alt="Rendered equation preview" title="Use Download or right-click here to export with the selected settings.">
+              </div>
+              <div class="preview-error" id="previewError">The render image could not be loaded. Check the LaTeX syntax or your network connection.</div>
+            </div>
+          </div>
+
+          <div class="option-strip">
+            <div class="choice-group">
+              <span class="choice-label">Formatted output</span>
+              <div class="choice-buttons" id="outputTypeButtons">
+                <button class="choice active" type="button" data-output="html">html</button>
+                <button class="choice" type="button" data-output="latex">latex</button>
+                <button class="choice" type="button" data-output="url">url</button>
+                <button class="choice" type="button" data-output="encoded">url encoded</button>
+                <button class="choice" type="button" data-output="xml">xml</button>
+                <button class="choice" type="button" data-output="pre">pre</button>
+                <button class="choice" type="button" data-output="doxygen">doxygen</button>
+                <button class="choice" type="button" data-output="wordpress">WordPress</button>
+                <button class="choice" type="button" data-output="phpbb">phpBB</button>
+                <button class="choice" type="button" data-output="tinywiki">Tiny Wiki</button>
+              </div>
+            </div>
+            <div class="choice-group">
+              <span class="choice-label">History</span>
+              <div class="history-list" id="historyList"></div>
+            </div>
+          </div>
+
+          <div class="copy-zone">
+            <div class="output-header">
+              <span class="section-title">Formatted string containing your equation</span>
+              <button class="icon-button" id="copyButton" type="button">Copy</button>
+            </div>
+            <div class="copy-box" id="copyBox" title="Click to copy"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features" aria-label="Key features">
+      <article class="feature">
+        <h3>Professional</h3>
+        <p>Build equations quickly with grouped palettes for fractions, radicals, calculus, Greek letters, constants, physics symbols, arrows, and matrices.</p>
+      </article>
+      <article class="feature">
+        <h3>Customisable</h3>
+        <p>Switch format, size, DPI, background, display mode, and output markup without leaving the editor surface.</p>
+      </article>
+      <article class="feature">
+        <h3>Developer Ready</h3>
+        <p>Copy HTML, plain LaTeX, URL, XML-style, forum, wiki, and comment-friendly snippets straight from the yellow output box.</p>
+      </article>
+    </section>
+
+    <footer>
+      <span>Clone UI built as a single-file web app.</span>
+      <span>Zyba Ltd style reference: CodeCogs Equation Editor.</span>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
+
+  <script>
+    const palettes = {
+      math: [
+        {
+          title: 'Common',
+          items: [
+            ['Fraction', '\\frac{a}{b}', 'a/b'],
+            ['Square root', '\\sqrt{x}', '√x'],
+            ['Power', 'x^{2}', 'x²'],
+            ['Subscript', 'x_{i}', 'xᵢ'],
+            ['Limit', '\\lim_{x \\to 0}', 'lim'],
+            ['Sum', '\\sum_{i=1}^{n}', 'Σ'],
+            ['Product', '\\prod_{i=1}^{n}', 'Π'],
+            ['Integral', '\\int_{a}^{b}', '∫']
+          ]
+        },
+        {
+          title: 'Functions',
+          items: [
+            ['Sine', '\\sin{x}', 'sin'],
+            ['Cosine', '\\cos{x}', 'cos'],
+            ['Tangent', '\\tan{x}', 'tan'],
+            ['Log', '\\log{x}', 'log'],
+            ['Natural log', '\\ln{x}', 'ln'],
+            ['Exponential', 'e^{x}', 'eˣ'],
+            ['Absolute value', '\\left|x\\right|', '|x|'],
+            ['Vector', '\\vec{v}', 'v⃗']
+          ]
+        },
+        {
+          title: 'Brackets',
+          items: [
+            ['Parentheses', '\\left( x \\right)', '( )'],
+            ['Square brackets', '\\left[ x \\right]', '[ ]'],
+            ['Braces', '\\left\\{ x \\right\\}', '{ }'],
+            ['Angle brackets', '\\left\\langle x \\right\\rangle', '⟨ ⟩']
+          ]
+        }
+      ],
+      symbols: [
+        {
+          title: 'Greek',
+          items: [
+            ['Alpha', '\\alpha', 'α'],
+            ['Beta', '\\beta', 'β'],
+            ['Gamma', '\\gamma', 'γ'],
+            ['Delta', '\\Delta', 'Δ'],
+            ['Theta', '\\theta', 'θ'],
+            ['Lambda', '\\lambda', 'λ'],
+            ['Mu', '\\mu', 'μ'],
+            ['Pi', '\\pi', 'π'],
+            ['Sigma', '\\sigma', 'σ'],
+            ['Omega', '\\Omega', 'Ω'],
+            ['Phi', '\\phi', 'φ'],
+            ['Rho', '\\rho', 'ρ']
+          ]
+        },
+        {
+          title: 'Relations',
+          items: [
+            ['Approximately equal', '\\approx', '≈'],
+            ['Not equal', '\\ne', '≠'],
+            ['Less or equal', '\\leq', '≤'],
+            ['Greater or equal', '\\geq', '≥'],
+            ['Proportional', '\\propto', '∝'],
+            ['Infinity', '\\infty', '∞'],
+            ['Element of', '\\in', '∈'],
+            ['Subset', '\\subseteq', '⊆']
+          ]
+        },
+        {
+          title: 'Arrows and sets',
+          items: [
+            ['Right arrow', '\\rightarrow', '→'],
+            ['Left arrow', '\\leftarrow', '←'],
+            ['Double arrow', '\\Rightarrow', '⇒'],
+            ['Equivalent', '\\Leftrightarrow', '⇔'],
+            ['Real numbers', '\\mathbb{R}', 'ℝ'],
+            ['Integers', '\\mathbb{Z}', 'ℤ'],
+            ['Union', '\\cup', '∪'],
+            ['Intersection', '\\cap', '∩']
+          ]
+        }
+      ],
+      physics: [
+        {
+          title: 'Universal constants',
+          items: [
+            ['Reduced Planck constant', '\\hbar', 'ℏ'],
+            ['Planck constant', 'h', 'h'],
+            ['Speed of light', 'c', 'c'],
+            ['Gravitational constant', 'G', 'G'],
+            ['Boltzmann constant', 'k_{B}', 'kB'],
+            ['Avogadro constant', 'N_{A}', 'NA'],
+            ['Gas constant', 'R', 'R'],
+            ['Elementary charge', 'e', 'e'],
+            ['Vacuum permittivity', '\\epsilon_{0}', 'ε0'],
+            ['Vacuum permeability', '\\mu_{0}', 'μ0'],
+            ['Fine-structure constant', '\\alpha', 'α'],
+            ['Stefan-Boltzmann constant', '\\sigma', 'σ'],
+            ['Faraday constant', 'F', 'F'],
+            ['Rydberg constant', 'R_{\\infty}', 'R∞'],
+            ['Bohr radius', 'a_{0}', 'a0'],
+            ['Compton wavelength', '\\lambda_{C}', 'λC'],
+            ['Flux quantum', '\\Phi_{0}', 'Φ0'],
+            ['Josephson constant', 'K_{J}', 'KJ'],
+            ['von Klitzing constant', 'R_{K}', 'RK'],
+            ['Atomic mass constant', 'm_{u}', 'mu']
+          ]
+        },
+        {
+          title: 'Masses and particles',
+          items: [
+            ['Electron mass', 'm_{e}', 'me'],
+            ['Proton mass', 'm_{p}', 'mp'],
+            ['Neutron mass', 'm_{n}', 'mn'],
+            ['Muon mass', 'm_{\\mu}', 'mμ'],
+            ['Tau mass', 'm_{\\tau}', 'mτ'],
+            ['Electron neutrino', '\\nu_{e}', 'νe'],
+            ['Muon neutrino', '\\nu_{\\mu}', 'νμ'],
+            ['Tau neutrino', '\\nu_{\\tau}', 'ντ'],
+            ['Photon', '\\gamma', 'γ'],
+            ['Gluon', 'g', 'g'],
+            ['W boson', 'W^{\\pm}', 'W±'],
+            ['Z boson', 'Z^{0}', 'Z0'],
+            ['Higgs boson', 'H^{0}', 'H0'],
+            ['Antiparticle', '\\bar{p}', 'p̄'],
+            ['Quark up', 'u', 'u'],
+            ['Quark down', 'd', 'd']
+          ]
+        },
+        {
+          title: 'Planck units',
+          items: [
+            ['Planck length', '\\ell_{P}', 'lP'],
+            ['Planck time', 't_{P}', 'tP'],
+            ['Planck mass', 'm_{P}', 'mP'],
+            ['Planck temperature', 'T_{P}', 'TP'],
+            ['Planck energy', 'E_{P}', 'EP'],
+            ['Planck charge', 'q_{P}', 'qP'],
+            ['Planck area', 'A_{P}', 'AP'],
+            ['Planck volume', 'V_{P}', 'VP']
+          ]
+        },
+        {
+          title: 'Quantum notation',
+          items: [
+            ['Wavefunction', '\\psi', 'ψ'],
+            ['State vector', '\\Psi', 'Ψ'],
+            ['Ket', '\\left|\\psi\\right\\rangle', '|ψ⟩'],
+            ['Bra', '\\left\\langle\\phi\\right|', '⟨φ|'],
+            ['Inner product', '\\left\\langle\\phi\\middle|\\psi\\right\\rangle', '⟨φ|ψ⟩'],
+            ['Outer product', '\\left|\\psi\\right\\rangle\\left\\langle\\phi\\right|', '|ψ⟩⟨φ|'],
+            ['Hamiltonian operator', '\\hat{H}', 'Ĥ'],
+            ['Momentum operator', '\\hat{p}', 'p̂'],
+            ['Position operator', '\\hat{x}', 'x̂'],
+            ['Expectation value', '\\left\\langle A \\right\\rangle', '⟨A⟩'],
+            ['Uncertainty', '\\Delta x', 'Δx'],
+            ['Commutator', '\\left[\\hat{x},\\hat{p}\\right]=i\\hbar', '[x,p]']
+          ]
+        },
+        {
+          title: 'Fields and vectors',
+          items: [
+            ['Electric field', '\\vec{E}', 'E⃗'],
+            ['Magnetic field', '\\vec{B}', 'B⃗'],
+            ['Force', '\\vec{F}', 'F⃗'],
+            ['Momentum', '\\vec{p}', 'p⃗'],
+            ['Angular momentum', '\\vec{L}', 'L⃗'],
+            ['Spin', '\\vec{S}', 'S⃗'],
+            ['Current density', '\\vec{J}', 'J⃗'],
+            ['Vector potential', '\\vec{A}', 'A⃗'],
+            ['Gradient', '\\nabla', '∇'],
+            ['Divergence', '\\nabla\\cdot\\vec{A}', '∇·A'],
+            ['Curl', '\\nabla\\times\\vec{A}', '∇×A'],
+            ['Laplacian', '\\nabla^{2}', '∇²']
+          ]
+        },
+        {
+          title: 'Relativity and tensors',
+          items: [
+            ['Spacetime coordinate', 'x^{\\mu}', 'xμ'],
+            ['Four-momentum', 'p^{\\mu}', 'pμ'],
+            ['Partial derivative', '\\partial_{\\mu}', '∂μ'],
+            ['D Alembertian', '\\Box', '□'],
+            ['Metric tensor', 'g_{\\mu\\nu}', 'gμν'],
+            ['Stress-energy tensor', 'T_{\\mu\\nu}', 'Tμν'],
+            ['Field strength tensor', 'F_{\\mu\\nu}', 'Fμν'],
+            ['Four-potential', 'A_{\\mu}', 'Aμ'],
+            ['Christoffel symbol', '\\Gamma^{\\rho}_{\\mu\\nu}', 'Γρμν'],
+            ['Ricci tensor', 'R_{\\mu\\nu}', 'Rμν'],
+            ['Ricci scalar', 'R', 'R'],
+            ['Cosmological constant', '\\Lambda', 'Λ']
+          ]
+        },
+        {
+          title: 'Thermo and statistical',
+          items: [
+            ['Entropy', 'S', 'S'],
+            ['Internal energy', 'U', 'U'],
+            ['Enthalpy', 'H', 'H'],
+            ['Temperature', 'T', 'T'],
+            ['Pressure', 'P', 'P'],
+            ['Volume', 'V', 'V'],
+            ['Partition function', 'Z', 'Z'],
+            ['Microstates', '\\Omega', 'Ω'],
+            ['Inverse temperature', '\\beta', 'β'],
+            ['Chemical potential', '\\mu', 'μ'],
+            ['Density', '\\rho', 'ρ'],
+            ['Heat capacity', 'C_{V}', 'CV']
+          ]
+        },
+        {
+          title: 'SI and derived units',
+          items: [
+            ['metre', '\\mathrm{m}', 'm'],
+            ['kilogram', '\\mathrm{kg}', 'kg'],
+            ['second', '\\mathrm{s}', 's'],
+            ['ampere', '\\mathrm{A}', 'A'],
+            ['kelvin', '\\mathrm{K}', 'K'],
+            ['mole', '\\mathrm{mol}', 'mol'],
+            ['candela', '\\mathrm{cd}', 'cd'],
+            ['newton', '\\mathrm{N}', 'N'],
+            ['joule', '\\mathrm{J}', 'J'],
+            ['watt', '\\mathrm{W}', 'W'],
+            ['pascal', '\\mathrm{Pa}', 'Pa'],
+            ['coulomb', '\\mathrm{C}', 'C'],
+            ['volt', '\\mathrm{V}', 'V'],
+            ['tesla', '\\mathrm{T}', 'T'],
+            ['electronvolt', '\\mathrm{eV}', 'eV'],
+            ['hertz', '\\mathrm{Hz}', 'Hz']
+          ]
+        },
+        {
+          title: 'Physics equations',
+          items: [
+            ['Mass-energy equivalence', 'E=mc^{2}', 'mc²'],
+            ['Planck-Einstein relation', 'E=h\\nu=\\hbar\\omega', 'hν'],
+            ['de Broglie wavelength', '\\lambda=\\frac{h}{p}', 'λ=h/p'],
+            ['Schrodinger equation', 'i\\hbar\\frac{\\partial}{\\partial t}\\Psi=\\hat{H}\\Psi', 'Schr'],
+            ['Heisenberg uncertainty', '\\Delta x\\,\\Delta p\\geq\\frac{\\hbar}{2}', 'ΔxΔp'],
+            ['Newton gravitation', 'F=G\\frac{m_{1}m_{2}}{r^{2}}', 'grav'],
+            ['Coulomb law', 'F=\\frac{1}{4\\pi\\epsilon_{0}}\\frac{q_{1}q_{2}}{r^{2}}', 'Coul'],
+            ['Lorentz factor', '\\gamma=\\frac{1}{\\sqrt{1-\\frac{v^{2}}{c^{2}}}}', 'γ(v)'],
+            ['Boltzmann entropy', 'S=k_{B}\\ln\\Omega', 'S=klnΩ'],
+            ['Ideal gas law', 'PV=nRT', 'PV=nRT'],
+            ['Stefan-Boltzmann law', 'j^{\\star}=\\sigma T^{4}', 'σT⁴'],
+            ['Einstein field equation', 'G_{\\mu\\nu}+\\Lambda g_{\\mu\\nu}=\\frac{8\\pi G}{c^{4}}T_{\\mu\\nu}', 'EFE']
+          ]
+        }
+      ],
+      templates: [
+        {
+          title: 'Matrices',
+          items: [
+            ['2 by 2 matrix', '\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}', '[2x2]'],
+            ['3 by 3 matrix', '\\begin{bmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{bmatrix}', '[3x3]'],
+            ['Determinant', '\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}', '|A|'],
+            ['Cases', '\\begin{cases} x^2, & x \\geq 0 \\\\ -x, & x < 0 \\end{cases}', 'cases']
+          ]
+        },
+        {
+          title: 'Ready equations',
+          items: [
+            ['Quadratic formula', 'x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}', 'quad'],
+            ['Bayes theorem', 'P(A\\mid B)=\\frac{P(B\\mid A)P(A)}{P(B)}', 'Bayes'],
+            ['Euler identity', 'e^{i\\pi}+1=0', 'Euler'],
+            ['Fourier transform', 'F(\\omega)=\\int_{-\\infty}^{\\infty} f(t)e^{-i\\omega t}\\,dt', 'F(ω)']
+          ]
+        },
+        {
+          title: 'Text helpers',
+          items: [
+            ['Text', '\\text{where }', 'text'],
+            ['Roman', '\\mathrm{d}x', 'dx'],
+            ['Bold', '\\mathbf{x}', 'bold'],
+            ['Overline', '\\overline{x}', 'x̄']
+          ]
+        }
+      ]
+    };
+
+    const state = {
+      activeTab: 'math',
+      outputType: 'html',
+      align: 'inline',
+      history: []
+    };
+
+    const els = {
+      paletteContent: document.getElementById('paletteContent'),
+      tabs: Array.from(document.querySelectorAll('.tab')),
+      latexInput: document.getElementById('latexInput'),
+      previewImage: document.getElementById('previewImage'),
+      previewFrame: document.getElementById('previewFrame'),
+      previewError: document.getElementById('previewError'),
+      formatSelect: document.getElementById('formatSelect'),
+      exportBackgroundSelect: document.getElementById('exportBackgroundSelect'),
+      sizeSelect: document.getElementById('sizeSelect'),
+      dpiSelect: document.getElementById('dpiSelect'),
+      backgroundSelect: document.getElementById('backgroundSelect'),
+      outputTypeButtons: document.getElementById('outputTypeButtons'),
+      copyBox: document.getElementById('copyBox'),
+      copyButton: document.getElementById('copyButton'),
+      downloadButton: document.getElementById('downloadButton'),
+      sampleButton: document.getElementById('sampleButton'),
+      clearButton: document.getElementById('clearButton'),
+      toast: document.getElementById('toast'),
+      historyList: document.getElementById('historyList'),
+      segments: Array.from(document.querySelectorAll('.segment'))
+    };
+
+    function renderPalette() {
+      els.paletteContent.innerHTML = '';
+      palettes[state.activeTab].forEach(group => {
+        const section = document.createElement('section');
+        section.className = 'palette-group';
+
+        const heading = document.createElement('h3');
+        heading.className = 'palette-heading';
+        heading.textContent = group.title;
+        section.appendChild(heading);
+
+        const grid = document.createElement('div');
+        grid.className = 'button-grid';
+
+        group.items.forEach(([title, latex, label]) => {
+          const button = document.createElement('button');
+          button.className = 'latex-chip';
+          button.type = 'button';
+          button.title = title + ': ' + latex;
+          button.textContent = label;
+          button.addEventListener('click', () => insertLatex(latex));
+          grid.appendChild(button);
+        });
+
+        section.appendChild(grid);
+        els.paletteContent.appendChild(section);
+      });
+    }
+
+    function insertLatex(value) {
+      const input = els.latexInput;
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const before = input.value.slice(0, start);
+      const after = input.value.slice(end);
+      const prefix = before && !/\s$/.test(before) ? ' ' : '';
+      const suffix = after && !/^\s/.test(after) ? ' ' : '';
+      input.value = before + prefix + value + suffix + after;
+      const nextPos = before.length + prefix.length + value.length;
+      input.focus();
+      input.setSelectionRange(nextPos, nextPos);
+      update();
+    }
+
+    function selectedLatex(options = {}) {
+      const raw = els.latexInput.value.trim() || '\\LaTeX';
+      const size = options.size || els.sizeSelect.value;
+      const dpi = options.dpi || els.dpiSelect.value;
+      const background = options.background || els.backgroundSelect.value;
+      const includeWhiteBackground = options.includeWhiteBackground === true;
+      const parts = [];
+
+      if (dpi !== '100') {
+        parts.push('\\dpi{' + dpi + '}');
+      }
+
+      if (size !== '12') {
+        parts.push('\\' + size + 'pt');
+      }
+
+      if (background !== 'transparent' && (background !== 'white' || includeWhiteBackground)) {
+        parts.push('\\bg{' + colorFor(background) + '}');
+      }
+
+      if (state.align === 'block') {
+        parts.push('\\displaystyle');
+      }
+
+      if (options.exportPadding) {
+        parts.push('\\qquad \\vphantom{\\int_{-\\infty}^{\\infty}\\sum_{i=1}^{n}\\sqrt{\\frac{a}{b}}}');
+        parts.push(raw);
+        parts.push('\\vphantom{\\int_{-\\infty}^{\\infty}\\sum_{i=1}^{n}\\sqrt{\\frac{a}{b}}} \\qquad');
+      } else {
+        parts.push(raw);
+      }
+      return parts.join(' ');
+    }
+
+    function colorFor(name) {
+      return {
+        black: 'black',
+        red: 'red',
+        green: 'green',
+        blue: 'blue',
+        white: 'white',
+        transparent: 'transparent'
+      }[name] || name;
+    }
+
+    function displayFormat() {
+      return els.formatSelect.value === 'png' ? 'png' : 'svg';
+    }
+
+    function imageUrl(format = displayFormat(), delivery = 'image', options = {}) {
+      return 'https://latex.codecogs.com/' + format + '.' + delivery + '?' + encodeURIComponent(selectedLatex(options));
+    }
+
+    function exportRenderOptions(extra = {}) {
+      const background = els.exportBackgroundSelect.value;
+      return {
+        dpi: '300',
+        background,
+        includeWhiteBackground: background === 'white',
+        exportPadding: true,
+        ...extra
+      };
+    }
+
+    function downloadUrl() {
+      if (els.formatSelect.value === 'jpg' || els.formatSelect.value === 'png') {
+        return '#';
+      }
+      return imageUrl(els.formatSelect.value, 'download', exportRenderOptions());
+    }
+
+    function htmlEscape(value) {
+      return value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+    }
+
+    function outputString() {
+      const latex = selectedLatex();
+      const embeddableFormat = els.formatSelect.value === 'jpg' ? 'png' : els.formatSelect.value;
+      const displayUrl = imageUrl(embeddableFormat, 'image');
+      const safeLatex = htmlEscape(latex);
+      const alt = htmlEscape(els.latexInput.value.trim());
+
+      switch (state.outputType) {
+        case 'latex':
+          return latex;
+        case 'url':
+          return displayUrl;
+        case 'encoded':
+          return encodeURIComponent(latex);
+        case 'xml':
+          return '<equation format="' + els.formatSelect.value + '">' + safeLatex + '</equation>';
+        case 'pre':
+          return '<pre>' + safeLatex + '</pre>';
+        case 'doxygen':
+          return '\\f$ ' + latex + ' \\f$';
+        case 'wordpress':
+          return '[latex]' + latex + '[/latex]';
+        case 'phpbb':
+          return '[tex]' + latex + '[/tex]';
+        case 'tinywiki':
+          return '{{eqn>' + latex + '}}';
+        case 'html':
+        default:
+          return '<img src="' + displayUrl + '" alt="' + alt + '">';
+      }
+    }
+
+    function updatePreviewBackground() {
+      const background = els.backgroundSelect.value;
+      els.previewFrame.className = 'preview-frame bg-' + background;
+    }
+
+    function updateHistory() {
+      const plain = els.latexInput.value.trim();
+      if (!plain || state.history[0] === plain) {
+        renderHistory();
+        return;
+      }
+
+      state.history = [plain, ...state.history.filter(item => item !== plain)].slice(0, 4);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      els.historyList.innerHTML = '';
+      if (!state.history.length) {
+        const empty = document.createElement('span');
+        empty.className = 'hint';
+        empty.textContent = 'Your recent equations appear here.';
+        els.historyList.appendChild(empty);
+        return;
+      }
+
+      state.history.forEach(item => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'history-item';
+        button.textContent = item;
+        button.title = item;
+        button.addEventListener('click', () => {
+          els.latexInput.value = item;
+          update(false);
+          els.latexInput.focus();
+        });
+        els.historyList.appendChild(button);
+      });
+    }
+
+    function update(trackHistory = true) {
+      updatePreviewBackground();
+      els.previewError.style.display = 'none';
+      els.previewImage.src = imageUrl();
+      els.copyBox.textContent = outputString();
+      if (trackHistory) {
+        updateHistory();
+      } else {
+        renderHistory();
+      }
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add('show');
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => els.toast.classList.remove('show'), 1500);
+    }
+
+    async function copyOutput() {
+      const text = els.copyBox.textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (error) {
+        const range = document.createRange();
+        range.selectNodeContents(els.copyBox);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        document.execCommand('copy');
+        selection.removeAllRanges();
+      }
+      showToast('Copied to clipboard');
+    }
+
+    function canvasBackground(format) {
+      if (format === 'jpg') {
+        return '#ffffff';
+      }
+
+      if (els.exportBackgroundSelect.value === 'transparent') {
+        return null;
+      }
+
+      return '#ffffff';
+    }
+
+    function saveBlob(blob, fileName) {
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 500);
+    }
+
+    function downloadSvg() {
+      const link = document.createElement('a');
+      link.href = downloadUrl();
+      link.download = 'equation.svg';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      showToast('SVG download started');
+    }
+
+    function exportRaster(format) {
+      const normalizedFormat = format === 'jpg' ? 'jpg' : 'png';
+      const mimeType = normalizedFormat === 'jpg' ? 'image/jpeg' : 'image/png';
+      const fileName = 'equation.' + normalizedFormat;
+      showToast('Preparing ' + normalizedFormat.toUpperCase() + ' export');
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.onload = () => {
+        try {
+          const equationSize = 100;
+          const equationBackground = equationSize + 40;
+          const padding = equationBackground;
+          const width = Math.max(1, image.naturalWidth || image.width);
+          const height = Math.max(1, image.naturalHeight || image.height);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.ceil(width + padding * 2);
+          canvas.height = Math.ceil(height + padding * 2);
+
+          const ctx = canvas.getContext('2d');
+          const background = canvasBackground(normalizedFormat);
+          if (background) {
+            ctx.fillStyle = background;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(
+            image,
+            Math.round(padding),
+            Math.round(padding),
+            Math.round(width),
+            Math.round(height)
+          );
+
+          canvas.toBlob(blob => {
+            if (!blob) {
+              showToast(normalizedFormat.toUpperCase() + ' export failed');
+              return;
+            }
+            saveBlob(blob, fileName);
+            showToast(normalizedFormat.toUpperCase() + ' downloaded');
+          }, mimeType, 0.94);
+        } catch (error) {
+          showToast(normalizedFormat.toUpperCase() + ' export blocked by browser security');
+        }
+      };
+      image.onerror = () => showToast(normalizedFormat.toUpperCase() + ' export failed; try SVG');
+      image.src = imageUrl('png', 'image', exportRenderOptions({
+        background: els.exportBackgroundSelect.value === 'white' ? 'white' : 'transparent',
+        includeWhiteBackground: els.exportBackgroundSelect.value === 'white'
+      }));
+    }
+
+    function exportCurrentSelection() {
+      if (['jpg', 'png'].includes(els.formatSelect.value)) {
+        exportRaster(els.formatSelect.value);
+        return;
+      }
+      downloadSvg();
+    }
+
+    function wireEvents() {
+      els.tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          state.activeTab = tab.dataset.tab;
+          els.tabs.forEach(item => item.setAttribute('aria-selected', String(item === tab)));
+          renderPalette();
+        });
+      });
+
+      [els.formatSelect, els.exportBackgroundSelect, els.sizeSelect, els.dpiSelect, els.backgroundSelect].forEach(control => {
+        control.addEventListener('change', () => update());
+      });
+
+      els.latexInput.addEventListener('input', () => update());
+      els.latexInput.addEventListener('keydown', event => {
+        if (event.key === 'Tab') {
+          event.preventDefault();
+          jumpCursor();
+        }
+      });
+
+      els.outputTypeButtons.addEventListener('click', event => {
+        const button = event.target.closest('.choice');
+        if (!button) return;
+        state.outputType = button.dataset.output;
+        Array.from(els.outputTypeButtons.querySelectorAll('.choice')).forEach(item => {
+          item.classList.toggle('active', item === button);
+        });
+        update(false);
+      });
+
+      els.segments.forEach(segment => {
+        segment.addEventListener('click', () => {
+          state.align = segment.dataset.align;
+          els.segments.forEach(item => item.classList.toggle('active', item === segment));
+          update();
+        });
+      });
+
+      els.copyButton.addEventListener('click', copyOutput);
+      els.copyBox.addEventListener('click', copyOutput);
+
+      els.downloadButton.addEventListener('click', exportCurrentSelection);
+
+      els.previewImage.addEventListener('contextmenu', event => {
+        event.preventDefault();
+        exportCurrentSelection();
+      });
+
+      els.previewImage.addEventListener('dragstart', event => {
+        event.preventDefault();
+        showToast('Use Download to export with selected settings');
+      });
+
+      els.previewImage.addEventListener('error', () => {
+        els.previewError.style.display = 'block';
+      });
+
+      els.sampleButton.addEventListener('click', () => {
+        els.latexInput.value = '\\frac{1}{\\sigma\\sqrt{2\\pi}}e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}';
+        update();
+        els.latexInput.focus();
+      });
+
+      els.clearButton.addEventListener('click', () => {
+        els.latexInput.value = '';
+        update(false);
+        els.latexInput.focus();
+      });
+    }
+
+    function jumpCursor() {
+      const input = els.latexInput;
+      const pos = input.selectionStart;
+      const value = input.value;
+      const bracket = value.slice(pos).search(/[{}]/);
+      if (bracket >= 0) {
+        const next = pos + bracket + 1;
+        input.setSelectionRange(next, next);
+      } else {
+        insertLatex(' ');
+      }
+    }
+
+    renderPalette();
+    wireEvents();
+    update();
+  </script>
+</body>
+</html>
