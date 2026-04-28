@@ -606,6 +606,155 @@
       word-break: break-word;
     }
 
+    .coach-shell {
+      align-items: start;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 0;
+      grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+      margin-top: 26px;
+      overflow: clip;
+    }
+
+    .coach-panel {
+      align-content: start;
+      align-self: start;
+      background: #f7fafc;
+      border-right: 1px solid var(--line);
+      display: grid;
+      gap: 12px;
+      max-height: calc(100vh - 92px);
+      overflow: auto;
+      padding: 16px;
+      position: sticky;
+      top: 78px;
+    }
+
+    .coach-heading {
+      margin: 0;
+    }
+
+    .coach-status {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      font-size: 12px;
+      gap: 7px;
+    }
+
+    .coach-dot {
+      background: var(--danger);
+      border-radius: 50%;
+      display: inline-block;
+      height: 8px;
+      width: 8px;
+    }
+
+    .coach-dot.ready {
+      background: var(--success);
+    }
+
+    .coach-form {
+      align-content: start;
+      display: grid;
+      gap: 10px;
+    }
+
+    .coach-row {
+      align-items: start;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .coach-question {
+      min-height: 92px;
+    }
+
+    .coach-actions {
+      align-items: flex-start;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .coach-actions .primary-button,
+    .coach-actions .tool-button {
+      flex: 0 0 auto;
+      min-height: 36px;
+    }
+
+    .coach-output {
+      align-self: start;
+      display: grid;
+      grid-template-rows: auto minmax(260px, 1fr);
+      max-height: calc(100vh - 92px);
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .coach-output-header {
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      padding: 14px 16px;
+    }
+
+    .coach-answer {
+      background: #fff;
+      line-height: 1.55;
+      max-height: calc(100vh - 154px);
+      min-height: 260px;
+      overflow: auto;
+      padding: 16px;
+      word-break: break-word;
+    }
+
+    .coach-answer.loading {
+      color: var(--muted);
+    }
+
+    .coach-answer code {
+      background: #eef4f9;
+      border-radius: 4px;
+      padding: 1px 4px;
+    }
+
+    .coach-answer pre {
+      background: #f4f7fa;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      overflow: auto;
+      padding: 12px;
+      white-space: pre-wrap;
+    }
+
+    .coach-answer h3,
+    .coach-answer h4 {
+      margin: 14px 0 6px;
+    }
+
+    .coach-answer p {
+      margin: 0 0 12px;
+    }
+
+    .coach-math-inline {
+      max-height: 1.9em;
+      max-width: 100%;
+      vertical-align: middle;
+    }
+
+    .coach-math-display {
+      display: block;
+      margin: 12px auto;
+      max-width: 100%;
+    }
+
     .toast {
       background: #203040;
       border-radius: 4px;
@@ -676,8 +825,21 @@
         grid-template-columns: repeat(3, minmax(130px, 1fr));
       }
 
+      .coach-shell,
       .features {
         grid-template-columns: 1fr;
+      }
+
+      .coach-panel {
+        border-bottom: 1px solid var(--line);
+        border-right: 0;
+        max-height: none;
+        position: static;
+      }
+
+      .coach-output,
+      .coach-answer {
+        max-height: none;
       }
     }
 
@@ -704,6 +866,10 @@
       }
 
       .settings {
+        grid-template-columns: 1fr;
+      }
+
+      .coach-row {
         grid-template-columns: 1fr;
       }
 
@@ -737,8 +903,8 @@
       <h1 id="page-title">Universal Equation Editor for mathematics</h1>
       <h2>- delivering thousands of beautiful equations every second -</h2>
       <p>
-        A standalone LaTeX equation editor, with a live render preview,
-        toolbar palettes, download links, and formatted strings for websites, forums, docs, and markup.
+        A LaTeX equation editor with a live render preview, toolbar palettes, export tools,
+        formatted strings, and an optional local AI coach.
       </p>
     </section>
 
@@ -877,6 +1043,66 @@
       </div>
     </section>
 
+    <section class="coach-shell" id="coach" aria-label="AI equation coach">
+      <div class="coach-panel">
+        <div>
+          <h2 class="coach-heading">AI Coach</h2>
+          <div class="coach-status">
+            <span class="coach-dot" id="coachStatusDot" aria-hidden="true"></span>
+            <span id="coachStatusText">Start the local server to connect AI.</span>
+          </div>
+        </div>
+
+        <div class="coach-form">
+          <div class="coach-row">
+            <div class="field">
+              <label for="coachProvider">Provider</label>
+              <select id="coachProvider">
+                <option value="openai">GPT</option>
+                <option value="anthropic">Claude</option>
+                <option value="gemini">Gemini</option>
+                <option value="deepseek">DeepSeek</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="coachMode">Mode</label>
+              <select id="coachMode">
+                <option value="explain">Explain</option>
+                <option value="check">Check LaTeX</option>
+                <option value="solve">Solve</option>
+                <option value="hint">Hint</option>
+                <option value="quiz">Quiz</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="coachModel">Model</label>
+            <input id="coachModel" type="text" value="gpt-5-mini">
+          </div>
+
+          <div class="field">
+            <label for="coachQuestion">Question</label>
+            <textarea class="coach-question" id="coachQuestion" spellcheck="true">Explain this equation like I am learning it for the first time.</textarea>
+          </div>
+
+          <div class="coach-actions">
+            <button class="primary-button" id="coachAskButton" type="button">Ask Coach</button>
+            <button class="tool-button" id="coachCheckButton" type="button">Check</button>
+            <button class="tool-button" id="coachHintButton" type="button">Hint</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="coach-output">
+        <div class="coach-output-header">
+          <span class="section-title">Coach response</span>
+          <button class="icon-button" id="coachCopyButton" type="button">Copy</button>
+        </div>
+        <div class="coach-answer" id="coachAnswer">AI coaching appears here when the local server is running and a provider key is configured.</div>
+      </div>
+    </section>
+
     <section class="features" id="features" aria-label="Key features">
       <article class="feature">
         <h3>Professional</h3>
@@ -890,11 +1116,15 @@
         <h3>Developer Ready</h3>
         <p>Copy HTML, plain LaTeX, URL, XML-style, forum, wiki, and comment-friendly snippets straight from the yellow output box.</p>
       </article>
+      <article class="feature">
+        <h3>AI Coach</h3>
+        <p>Connect GPT, Claude, Gemini, or DeepSeek through a local proxy for equation checks, hints, explanations, and step-by-step help.</p>
+      </article>
     </section>
 
     <footer>
-      <span>Clone UI built as a single-file web app.</span>
-      <span>Zyba Ltd style reference: CodeCogs Equation Editor.</span>
+      <span>Universal Equation Editor with optional local AI coaching.</span>
+      <span>Built for Malin Hess & Dainton, with GPT.</span>
     </footer>
   </main>
 
@@ -1186,7 +1416,16 @@
       activeTab: 'math',
       outputType: 'html',
       align: 'inline',
-      history: []
+      history: [],
+      providerModels: {
+        openai: 'gpt-5-mini',
+        anthropic: 'claude-sonnet-4-20250514',
+        gemini: 'gemini-2.5-flash',
+        deepseek: 'deepseek-v4-flash'
+      },
+      providerConfigured: {},
+      providerSources: {},
+      coachLastAnswer: ''
     };
 
     const els = {
@@ -1209,6 +1448,17 @@
       clearButton: document.getElementById('clearButton'),
       toast: document.getElementById('toast'),
       historyList: document.getElementById('historyList'),
+      coachProvider: document.getElementById('coachProvider'),
+      coachMode: document.getElementById('coachMode'),
+      coachModel: document.getElementById('coachModel'),
+      coachQuestion: document.getElementById('coachQuestion'),
+      coachAskButton: document.getElementById('coachAskButton'),
+      coachCheckButton: document.getElementById('coachCheckButton'),
+      coachHintButton: document.getElementById('coachHintButton'),
+      coachCopyButton: document.getElementById('coachCopyButton'),
+      coachAnswer: document.getElementById('coachAnswer'),
+      coachStatusDot: document.getElementById('coachStatusDot'),
+      coachStatusText: document.getElementById('coachStatusText'),
       segments: Array.from(document.querySelectorAll('.segment'))
     };
 
@@ -1443,6 +1693,202 @@
       showToast('Copied to clipboard');
     }
 
+    function setCoachStatus(message, ready = false) {
+      els.coachStatusText.textContent = message;
+      els.coachStatusDot.classList.toggle('ready', ready);
+    }
+
+    function setCoachLoading(isLoading) {
+      els.coachAskButton.disabled = isLoading;
+      els.coachCheckButton.disabled = isLoading;
+      els.coachHintButton.disabled = isLoading;
+      els.coachAnswer.classList.toggle('loading', isLoading);
+    }
+
+    function updateCoachModelFromProvider() {
+      const provider = els.coachProvider.value;
+      els.coachModel.value = state.providerModels[provider] || '';
+      const configured = state.providerConfigured[provider];
+      if (configured === true) {
+        const source = state.providerSources[provider] ? ' from ' + state.providerSources[provider] : '';
+        setCoachStatus(providerLabel(provider) + ' ready' + source, true);
+      } else if (configured === false) {
+        setCoachStatus(providerLabel(provider) + ' key missing', false);
+      }
+    }
+
+    function refreshProviderOptions() {
+      Array.from(els.coachProvider.options).forEach(option => {
+        const configured = state.providerConfigured[option.value];
+        const label = providerLabel(option.value);
+        option.textContent = configured === false ? label + ' (needs key)' : label;
+        option.disabled = configured === false;
+      });
+    }
+
+    function firstConfiguredProvider() {
+      return Object.entries(state.providerConfigured).find(([, configured]) => configured)?.[0] || '';
+    }
+
+    function providerLabel(provider) {
+      return {
+        openai: 'GPT',
+        anthropic: 'Claude',
+        gemini: 'Gemini',
+        deepseek: 'DeepSeek'
+      }[provider] || provider;
+    }
+
+    function coachMathUrl(latex, display = false) {
+      const mode = display ? '\\displaystyle ' : '';
+      return 'https://latex.codecogs.com/svg.image?' + encodeURIComponent('\\dpi{140} ' + mode + latex.trim());
+    }
+
+    function appendCoachText(parent, text) {
+      const lines = text.split('\n');
+      lines.forEach((line, index) => {
+        const heading = line.match(/^(#{2,4})\s+(.+)$/);
+        if (heading) {
+          const tag = heading[1].length >= 3 ? 'h4' : 'h3';
+          const headingEl = document.createElement(tag);
+          headingEl.textContent = heading[2];
+          parent.appendChild(headingEl);
+        } else if (line.trim()) {
+          parent.appendChild(document.createTextNode(line));
+        }
+
+        if (index < lines.length - 1) {
+          parent.appendChild(document.createElement('br'));
+        }
+      });
+    }
+
+    function appendCoachMath(parent, latex, display) {
+      const image = document.createElement('img');
+      image.className = display ? 'coach-math-display' : 'coach-math-inline';
+      image.alt = latex.trim();
+      image.src = coachMathUrl(latex, display);
+      parent.appendChild(image);
+    }
+
+    function appendCoachCode(parent, code) {
+      const pre = document.createElement('pre');
+      const codeEl = document.createElement('code');
+      codeEl.textContent = code.trim();
+      pre.appendChild(codeEl);
+      parent.appendChild(pre);
+    }
+
+    function renderCoachAnswer(text) {
+      state.coachLastAnswer = text || '';
+      els.coachAnswer.innerHTML = '';
+
+      if (!text) {
+        els.coachAnswer.textContent = 'No response text returned.';
+        return;
+      }
+
+      const tokenPattern = /```[a-zA-Z]*\n([\s\S]*?)```|\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\\\(([\s\S]*?)\\\)/g;
+      let cursor = 0;
+      let match;
+
+      while ((match = tokenPattern.exec(text)) !== null) {
+        appendCoachText(els.coachAnswer, text.slice(cursor, match.index));
+
+        if (match[1] !== undefined) {
+          appendCoachCode(els.coachAnswer, match[1]);
+        } else if (match[2] !== undefined) {
+          appendCoachMath(els.coachAnswer, match[2], true);
+        } else if (match[3] !== undefined) {
+          appendCoachMath(els.coachAnswer, match[3], true);
+        } else if (match[4] !== undefined) {
+          appendCoachMath(els.coachAnswer, match[4], false);
+        }
+
+        cursor = tokenPattern.lastIndex;
+      }
+
+      appendCoachText(els.coachAnswer, text.slice(cursor));
+    }
+
+    async function loadCoachStatus() {
+      if (location.protocol === 'file:') {
+        setCoachStatus('Open http://localhost:4321 to use AI', false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/status');
+        if (!response.ok) throw new Error('Status check failed');
+        const data = await response.json();
+        Object.entries(data.providers || {}).forEach(([provider, info]) => {
+          state.providerConfigured[provider] = Boolean(info.configured);
+          state.providerModels[provider] = info.defaultModel || state.providerModels[provider];
+          state.providerSources[provider] = info.source || '';
+        });
+        refreshProviderOptions();
+        if (!state.providerConfigured[els.coachProvider.value]) {
+          const configuredProvider = firstConfiguredProvider();
+          if (configuredProvider) {
+            els.coachProvider.value = configuredProvider;
+            renderCoachAnswer('I switched to ' + providerLabel(configuredProvider) + ' because that provider is already configured on this machine.');
+          }
+        }
+        updateCoachModelFromProvider();
+      } catch (error) {
+        setCoachStatus('Local AI server not connected', false);
+      }
+    }
+
+    async function askCoach(modeOverride) {
+      if (location.protocol === 'file:') {
+        renderCoachAnswer('Start the local server with `node server.js`, then open http://localhost:4321.');
+        setCoachStatus('Local server required', false);
+        return;
+      }
+
+      const provider = els.coachProvider.value;
+      const mode = modeOverride || els.coachMode.value;
+      const model = els.coachModel.value.trim();
+      state.providerModels[provider] = model;
+      els.coachMode.value = mode;
+      setCoachLoading(true);
+      renderCoachAnswer('Thinking...');
+
+      try {
+        const response = await fetch('/api/coach', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            provider,
+            model,
+            mode,
+            equation: els.latexInput.value,
+            output: outputString(),
+            question: els.coachQuestion.value
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'AI coach request failed');
+        renderCoachAnswer(data.answer || 'No response text returned.');
+        setCoachStatus(providerLabel(provider) + ' answered', true);
+      } catch (error) {
+        renderCoachAnswer(error.message);
+        setCoachStatus(providerLabel(provider) + ' needs attention', false);
+      } finally {
+        setCoachLoading(false);
+      }
+    }
+
+    async function copyCoachAnswer() {
+      try {
+        await navigator.clipboard.writeText(state.coachLastAnswer || els.coachAnswer.textContent);
+        showToast('Coach response copied');
+      } catch (error) {
+        showToast('Copy failed');
+      }
+    }
+
     function canvasBackground(format) {
       if (format === 'jpg') {
         return '#ffffff';
@@ -1580,6 +2026,14 @@
 
       els.copyButton.addEventListener('click', copyOutput);
       els.copyBox.addEventListener('click', copyOutput);
+      els.coachProvider.addEventListener('change', updateCoachModelFromProvider);
+      els.coachModel.addEventListener('input', () => {
+        state.providerModels[els.coachProvider.value] = els.coachModel.value;
+      });
+      els.coachAskButton.addEventListener('click', () => askCoach());
+      els.coachCheckButton.addEventListener('click', () => askCoach('check'));
+      els.coachHintButton.addEventListener('click', () => askCoach('hint'));
+      els.coachCopyButton.addEventListener('click', copyCoachAnswer);
 
       els.downloadButton.addEventListener('click', exportCurrentSelection);
 
@@ -1626,6 +2080,7 @@
     renderPalette();
     wireEvents();
     update();
+    loadCoachStatus();
   </script>
 </body>
 </html>
